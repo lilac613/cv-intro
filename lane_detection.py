@@ -9,6 +9,7 @@ class Line:
         self.x2 = x2
         self.y1 = y1
         self.y2 = y2
+        self.d = False
     def get_slope(self):
         '''returns slope of line'''
         if self.x1==self.x2:
@@ -21,19 +22,26 @@ class Line:
         return ((self.get_slope()*self.x1 - self.y1)/self.get_slope(),0)
     def get_points(self):
         return (self.x1, self.y1, self.x2, self.y2)
+    def length(self):
+        return ((self.x1-self.x2)**2 + (self.y1-self.y2)**2)**0.5
+    def dealt(self,bool):
+        self.d = bool
+    def dealtWith(self):
+        return self.d
 
-def detect_lines(img, threshold1, threshold2, apertureSize,minLineLength,maxLineGap):
+def detect_lines(my_img, threshold1, threshold2, apertureSize,minLineLength,maxLineGap):
     '''Takes an image as input and returns a list of detected lines'''
-    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY) # convert to grayscale
-    edges = cv2.Canny(gray, threshold1, threshold2, apertureSize) # detect edges
+    gray = cv2.cvtColor(my_img, cv2.COLOR_BGR2GRAY) # convert to grayscale
+    #edges = cv2.Canny(gray, threshold1, threshold2, apertureSize) # detect edges
+    edges = cv2.Canny(gray,0, 45, apertureSize=3)
     lines = cv2.HoughLinesP(
                 edges,
-                1,
-                np.pi/180,
-                100,
-                minLineLength,
-                maxLineGap,
-        ) # detect lines
+                rho=1,
+                theta=np.pi/180,
+                threshold=100,
+                minLineLength=100,
+                maxLineGap=30,
+        )
     ret_lines = []
     for line in lines:
 
@@ -44,10 +52,11 @@ def detect_lines(img, threshold1, threshold2, apertureSize,minLineLength,maxLine
 
 def draw_lines(img, lines, color=(0,255,0)):
     '''Takes an image and a list of lines as inputs and returns an image with the lines drawn on it'''
+    temp_img =img
     for line in lines:
         (x1, y1, x2, y2) = line.get_points()
-        cv2.line(img, (x1,y1), (x2,y2), color, 2)
-    return img
+        cv2.line(temp_img, (x1,y1), (x2,y2), color, 2)
+    return temp_img
 
 def get_slope_intercepts(lines):
     '''Takes in list of lines as input and returns a list of slopes and a list of intercepts'''
@@ -62,28 +71,37 @@ def get_array_x_int(elem):
     return elem[1]
 
 def filterLines(lines):
-    lineData = []
-    for line in lines:
-        x1, y1, x2, y2 = line[0]
-        #print(line[0])
-        slope = (y2 - y1)/(x2 - x1)
-        xInt = (slope * x1 - y1) / slope
-        lineData.append([slope, xInt, x1, y1, x2, y2])
-        #cv2.line(img, (x1, y1), (x2, y2), (0, 255, 0), 2)
-        #print(lineData)
-
+    '''removes collinear lines'''
+    print(len(lines))
     cleanedLines = []
-    for line in lineData:
-        #loop thru cleanedLines, see if line with close enough slope is already within cleanedlines 
-        canAdd = True
-        for cleanedLine in cleanedLines:
-            #if exists, set canAdd to false
-            if abs(cleanedLine[1] - line[1]) < 3:
-                canAdd = False
+    for i in range(len(lines)):
+        if lines[i].dealtWith():
+            continue
+        current_slope = lines[i].get_slope()
+        minx1 = min(lines[i].get_points()[0],lines[i].get_points()[2])
+        miny1 = min(lines[i].get_points()[1],lines[i].get_points()[3])
+        maxx2 = max(lines[i].get_points()[0],lines[i].get_points()[2])
+        maxy2 = max(lines[i].get_points()[1],lines[i].get_points()[3])
+        for j in range(i,len(lines)):
+            if abs(lines[j].get_slope() - current_slope)<0.5 and not lines[j].dealtWith():
+                minx1 = min(lines[j].get_points()[0],lines[j].get_points()[2],minx1)
+                miny1 = min(lines[j].get_points()[1],lines[j].get_points()[3],miny1)
+                maxx2 = max(lines[j].get_points()[2],lines[j].get_points()[0],maxx2)
+                maxy2 = max(lines[j].get_points()[3],lines[j].get_points()[1],maxy2)
+                lines[j].dealt(True)
+        cleanedLines.append(Line(minx1,miny1,maxx2,maxy2))
 
-        if canAdd:
-            cleanedLines.append(line)
-        return cleanedLines
+    # for line in lines:
+    #     #loop thru cleanedLines, see if line with close enough slope is already within cleanedlines 
+    #     canAdd = True
+    #     for cleanedLine in cleanedLines:
+    #         #if exists, set canAdd to false
+    #         if abs(cleanedLine.get_x_intercept()[0] - line.get_x_intercept()[0]) < 0.5:# or cleanedLine.length() < line.length():
+    #             canAdd = False
+
+    #     if canAdd:
+    #         cleanedLines.append(line)
+    return cleanedLines
 
 def detect_lanes(lines):
     '''Takes a list of lines as an input and returns a list of lanes
@@ -104,12 +122,12 @@ def detect_lanes(lines):
     
     lanes = []
     cleanedLines = filterLines(lines)
-    cleanedLines.sort(key=get_array_x_int)
-
+    cleanedLines.sort(key=lambda x: x.get_x_intercept()[0])
+    print(len(cleanedLines))
     pairBefore = False
     startPoint = 1
     endPoint = len(cleanedLines)
-    if (cleanedLines[1][1] - cleanedLines[0][1]) < (cleanedLines[2][1] - cleanedLines[1][1]):
+    if (cleanedLines[1].get_x_intercept()[0] - cleanedLines[0].get_x_intercept()[0]) < (cleanedLines[2].get_x_intercept()[0]  - cleanedLines[1].get_x_intercept()[0]):
         startPoint = 0
         pairBefore = True
     if (pairBefore and len(cleanedLines)%2 != 0) or (not pairBefore and len(cleanedLines)%2==0):
@@ -120,10 +138,12 @@ def detect_lanes(lines):
 
 def draw_lanes(img,lanes):
     '''Takes an image and list of lanes as inputs and returns an image with lanes drawn on it'''
-    return draw_lines(img, lanes, (0,255,0))
-
-
-
+    temp_img = img
+    for lane in lanes:
+        for line in lane:
+            (x1, y1, x2, y2) = line.get_points()
+            cv2.line(temp_img, (x1,y1), (x2,y2), (0,255,0), 2)
+    return temp_img
 
 
 
