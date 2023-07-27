@@ -67,12 +67,9 @@ def get_slope_intercepts(lines):
         intercepts.append(line.get_x_intercept())
     return (slopes,intercepts)
 
-def get_array_x_int(elem):
-    return elem[1]
-
 def filterLines(lines):
     '''removes collinear lines'''
-    print(len(lines))
+    print("SDF")
     cleanedLines = []
     for i in range(len(lines)):
         if lines[i].dealtWith():
@@ -82,8 +79,8 @@ def filterLines(lines):
         miny1 = min(lines[i].get_points()[1],lines[i].get_points()[3])
         maxx2 = max(lines[i].get_points()[0],lines[i].get_points()[2])
         maxy2 = max(lines[i].get_points()[1],lines[i].get_points()[3])
-        for j in range(i,len(lines)):
-            if abs(lines[j].get_slope() - current_slope)<0.5 and not lines[j].dealtWith():
+        for j in range(i+1,len(lines)):
+            if abs(lines[j].get_slope() - current_slope)<1 and not lines[j].dealtWith():
                 minx1 = min(lines[j].get_points()[0],lines[j].get_points()[2],minx1)
                 miny1 = min(lines[j].get_points()[1],lines[j].get_points()[3],miny1)
                 maxx2 = max(lines[j].get_points()[2],lines[j].get_points()[0],maxx2)
@@ -101,6 +98,7 @@ def filterLines(lines):
 
     #     if canAdd:
     #         cleanedLines.append(line)
+    print(cleanedLines)
     return cleanedLines
 
 def detect_lanes(lines):
