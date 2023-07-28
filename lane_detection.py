@@ -29,11 +29,11 @@ class Line:
     def dealtWith(self):
         return self.d
 
-def detect_lines(my_img, threshold1, threshold2, apertureSize,minLineLength,maxLineGap):
+def detect_lines(my_img, edges, threshold1, threshold2, apertureSize,minLineLength,maxLineGap):
     '''Takes an image as input and returns a list of detected lines'''
     # gray = cv2.cvtColor(my_img, cv2.COLOR_BGR2GRAY) # convert to grayscale
     # #edges = cv2.Canny(gray, threshold1, threshold2, apertureSize) # detect edges
-    # edges = cv2.Canny(gray,0, 45, apertureSize=3)
+    # 
     # lines = cv2.HoughLinesP(
     #             edges,
     #             rho=1,
@@ -42,16 +42,11 @@ def detect_lines(my_img, threshold1, threshold2, apertureSize,minLineLength,maxL
     #             minLineLength=100,
     #             maxLineGap=30,
     #     )
-    sliced_img = my_img[ int(my_img.shape[0] / 2) : my_img.shape[0]]
-    gray = cv2.cvtColor(sliced_img, cv2.COLOR_BGR2GRAY) # convert to grayscale
-    blurredimg = cv2.GaussianBlur(gray,(9,9),0)
-    ret,bw_image = cv2.threshold(blurredimg, 140, 255, cv2.THRESH_BINARY)
-    edges = cv2.Canny(bw_image,10, 10, apertureSize=3) # detect edges
     lines = cv2.HoughLinesP(
                  edges,
                  rho=1,
                  theta=np.pi/180,
-                 threshold=100,
+                 threshold=70,
                  minLineLength=100,
                  maxLineGap=30,
          )

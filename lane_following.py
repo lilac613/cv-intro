@@ -5,25 +5,22 @@ import lane_detection
 
 def get_lane_center(lanes):
     '''takes in list of lanes and returns intercept and slope of closest lane'''
-    closest_slope = 0
-    closest_intercept = 0
+    steepest_slope = 0
     closest_lane = lanes[0]
     for lane in lanes:
-
-        center_slope = 1/((1/lane[0].get_slope() + 1/lane[1].get_slope())/2)
-        center_intercept = (lane[0].get_x_intercept()[0] + lane[1].get_x_intercept()[0])/2
-        if abs(center_slope) > abs(closest_slope):
+        current_slope = max(abs(lane[0].get_slope()),abs(lane[1].get_slope()))
+        #center_intercept = (lane[0].get_x_intercept()[0] + lane[1].get_x_intercept()[0])/2
+        if current_slope > steepest_slope:
             closest_lane = lane
-            closest_slope = center_slope
-            closest_intercept = center_intercept
+            steepest_slope = current_slope
     return [closest_lane]
     #return (closest_intercept,closest_slope)
 
 def get_center_line(lane):
     center_slope = 1/((1/lane[0].get_slope() + 1/lane[1].get_slope())/2)
     center_intercept = (lane[0].get_x_intercept()[0] + lane[1].get_x_intercept()[0])/2
-    x1 = (-1080 + center_slope * center_slope)/slope
-    return Line()
+    x1 = (-1080 + center_slope * center_slope)/center_slope
+    return (x1,0,center_intercept,1080)
 
 def draw_center_lane(img, center_intercept, center_slope, xPoint, yPoint):
     global imgPixelHeight
