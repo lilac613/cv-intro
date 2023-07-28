@@ -1,7 +1,7 @@
 import cv2
 import numpy as np
 import matplotlib.pyplot as plt
-from dt_apriltags import Detector
+#from dt_apriltags import Detector
 
 class Line:
     def __init__(self,x1, y1, x2, y2):
@@ -19,7 +19,7 @@ class Line:
         '''returns x-ntercept of line'''
         if self.y1==self.y2:
             return None
-        return ((self.get_slope()*self.x1 - self.y1)/self.get_slope(),0)
+        return ((((1080 - self.y1)/self.get_slope())+ self.x1),0)
     def get_points(self):
         return (self.x1, self.y1, self.x2, self.y2)
     def length(self):
@@ -53,6 +53,7 @@ def detect_lines(my_img, threshold1, threshold2, apertureSize,minLineLength,maxL
 def draw_lines(img, lines, color=(0,255,0)):
     '''Takes an image and a list of lines as inputs and returns an image with the lines drawn on it'''
     temp_img =img
+    i = 0
     for line in lines:
         (x1, y1, x2, y2) = line.get_points()
         cv2.line(temp_img, (x1,y1), (x2,y2), color, 2)
@@ -69,24 +70,41 @@ def get_slope_intercepts(lines):
 
 def filterLines(lines):
     '''removes collinear lines'''
-    print("SDF")
     cleanedLines = []
     for i in range(len(lines)):
         if lines[i].dealtWith():
             continue
+        lines[i].dealt(True)
         current_slope = lines[i].get_slope()
-        minx1 = min(lines[i].get_points()[0],lines[i].get_points()[2])
-        miny1 = min(lines[i].get_points()[1],lines[i].get_points()[3])
-        maxx2 = max(lines[i].get_points()[0],lines[i].get_points()[2])
-        maxy2 = max(lines[i].get_points()[1],lines[i].get_points()[3])
-        for j in range(i+1,len(lines)):
-            if abs(lines[j].get_slope() - current_slope)<1 and not lines[j].dealtWith():
-                minx1 = min(lines[j].get_points()[0],lines[j].get_points()[2],minx1)
-                miny1 = min(lines[j].get_points()[1],lines[j].get_points()[3],miny1)
-                maxx2 = max(lines[j].get_points()[2],lines[j].get_points()[0],maxx2)
-                maxy2 = max(lines[j].get_points()[3],lines[j].get_points()[1],maxy2)
-                lines[j].dealt(True)
-        cleanedLines.append(Line(minx1,miny1,maxx2,maxy2))
+        current_intercept = lines[i].get_x_intercept()[0]
+        if current_slope>0:
+            minx1 = min(lines[i].get_points()[0],lines[i].get_points()[2])
+            miny1 = min(lines[i].get_points()[1],lines[i].get_points()[3])
+            maxx2 = max(lines[i].get_points()[0],lines[i].get_points()[2])
+            maxy2 = max(lines[i].get_points()[1],lines[i].get_points()[3])
+            for j in range(i+1,len(lines)):
+                #abs(lines[j].get_slope() - current_slope)<1 and
+                if not lines[j].dealtWith() and abs(current_intercept-lines[j].get_x_intercept()[0])<40 and lines[j].get_slope()>0 and abs(lines[j].get_slope() - current_slope)<1:
+                    minx1 = min(lines[j].get_points()[0],lines[j].get_points()[2],minx1)
+                    miny1 = min(lines[j].get_points()[1],lines[j].get_points()[3],miny1)
+                    maxx2 = max(lines[j].get_points()[2],lines[j].get_points()[0],maxx2)
+                    maxy2 = max(lines[j].get_points()[3],lines[j].get_points()[1],maxy2)
+                    lines[j].dealt(True)
+            cleanedLines.append(Line(minx1,miny1,maxx2,maxy2))
+        else:
+            minx1 = min(lines[i].get_points()[0],lines[i].get_points()[2])
+            maxy1 = max(lines[i].get_points()[1],lines[i].get_points()[3])
+            maxx2 = max(lines[i].get_points()[0],lines[i].get_points()[2])
+            miny2 = min(lines[i].get_points()[1],lines[i].get_points()[3])
+            for j in range(i+1,len(lines)):
+                #abs(lines[j].get_slope() - current_slope)<1 and
+                if not lines[j].dealtWith() and abs(current_intercept-lines[j].get_x_intercept()[0])<40 and lines[j].get_slope()<0 and abs(lines[j].get_slope() - current_slope)<1:
+                    minx1 = min(lines[j].get_points()[0],lines[j].get_points()[2],minx1)
+                    maxy1 = max(lines[j].get_points()[1],lines[j].get_points()[3],maxy1)
+                    maxx2 = max(lines[j].get_points()[2],lines[j].get_points()[0],maxx2)
+                    miny2 = min(lines[j].get_points()[3],lines[j].get_points()[1],miny2)
+                    lines[j].dealt(True)
+            cleanedLines.append(Line(minx1,maxy1,maxx2,miny2))
 
     # for line in lines:
     #     #loop thru cleanedLines, see if line with close enough slope is already within cleanedlines 
@@ -98,7 +116,6 @@ def filterLines(lines):
 
     #     if canAdd:
     #         cleanedLines.append(line)
-    print(cleanedLines)
     return cleanedLines
 
 def detect_lanes(lines):
@@ -121,7 +138,6 @@ def detect_lanes(lines):
     lanes = []
     cleanedLines = filterLines(lines)
     cleanedLines.sort(key=lambda x: x.get_x_intercept()[0])
-    print(len(cleanedLines))
     pairBefore = False
     startPoint = 1
     endPoint = len(cleanedLines)
