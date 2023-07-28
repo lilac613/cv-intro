@@ -22,6 +22,8 @@ def get_lane_center(lanes):
 def get_center_line(lane):
     center_slope = 1/((1/lane[0].get_slope() + 1/lane[1].get_slope())/2)
     center_intercept = (lane[0].get_x_intercept()[0] + lane[1].get_x_intercept()[0])/2
+    x1 = (-1080 + center_slope * center_slope)/slope
+    return Line()
 
 def draw_center_lane(img, center_intercept, center_slope, xPoint, yPoint):
     global imgPixelHeight
