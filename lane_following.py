@@ -20,7 +20,7 @@ def get_center_line(lane):
     center_slope = 1/((1/lane[0].get_slope() + 1/lane[1].get_slope())/2)
     center_intercept = (lane[0].get_x_intercept()[0] + lane[1].get_x_intercept()[0])/2
     x1 = (-1080 + center_slope * center_slope)/center_slope
-    return (x1,0,center_intercept,1080)
+    return lane_detection.Line(x1,0,center_intercept,1080)
 
 def draw_center_lane(img, center_intercept, center_slope, xPoint, yPoint):
     global imgPixelHeight
@@ -35,4 +35,3 @@ def recommend_direction(center,slope):
     elif slope > 0:
         return "right"
     return "forward"
-

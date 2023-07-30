@@ -166,14 +166,3 @@ def draw_lanes(img,lanes):
             (x1, y1, x2, y2) = line.get_points()
             cv2.line(temp_img, (x1,y1), (x2,y2), (0,255,0), 2)
     return temp_img
-
-
-
-    
-    
-    
-
-
-    
-
-
