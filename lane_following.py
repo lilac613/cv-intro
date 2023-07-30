@@ -16,11 +16,11 @@ def get_lane_center(lanes):
     return [closest_lane]
     #return (closest_intercept,closest_slope)
 
-def get_center_line(lane):
+def get_center_line(lane, screen_height=180):
     center_slope = 1/((1/lane[0].get_slope() + 1/lane[1].get_slope())/2)
     center_intercept = (lane[0].get_x_intercept()[0] + lane[1].get_x_intercept()[0])/2
-    x1 = (-1080 + center_slope * center_slope)/center_slope
-    return lane_detection.Line(x1,0,center_intercept,1080)
+    x1 = ((-1*screen_height) + center_slope * center_intercept)/center_slope
+    return lane_detection.Line(x1,0,center_intercept,screen_height)
 
 def draw_center_lane(img, center_intercept, center_slope, xPoint, yPoint):
     global imgPixelHeight

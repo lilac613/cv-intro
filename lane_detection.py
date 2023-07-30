@@ -15,11 +15,11 @@ class Line:
         if self.x1==self.x2:
             return None
         return (self.y2-self.y1)/(self.x2-self.x1)
-    def get_x_intercept(self):
+    def get_x_intercept(self,screen_height=180):
         '''returns x-ntercept of line'''
         if self.y1==self.y2:
             return None
-        return ((((1080 - self.y1)/self.get_slope())+ self.x1),0)
+        return ((((screen_height - self.y1)/self.get_slope())+ self.x1),0)
     def get_points(self):
         return (self.x1, self.y1, self.x2, self.y2)
     def length(self):
@@ -30,18 +30,6 @@ class Line:
         return self.d
 
 def detect_lines(my_img, edges, threshold1, threshold2, apertureSize,minLineLength,maxLineGap):
-    '''Takes an image as input and returns a list of detected lines'''
-    # gray = cv2.cvtColor(my_img, cv2.COLOR_BGR2GRAY) # convert to grayscale
-    # #edges = cv2.Canny(gray, threshold1, threshold2, apertureSize) # detect edges
-    # 
-    # lines = cv2.HoughLinesP(
-    #             edges,
-    #             rho=1,
-    #             theta=np.pi/180,
-    #             threshold=100,
-    #             minLineLength=100,
-    #             maxLineGap=30,
-    #     )
     lines = cv2.HoughLinesP(
                  edges,
                  rho=1,
@@ -113,36 +101,9 @@ def filterLines(lines):
                     miny2 = min(lines[j].get_points()[3],lines[j].get_points()[1],miny2)
                     lines[j].dealt(True)
             cleanedLines.append(Line(minx1,maxy1,maxx2,miny2))
-
-    # for line in lines:
-    #     #loop thru cleanedLines, see if line with close enough slope is already within cleanedlines 
-    #     canAdd = True
-    #     for cleanedLine in cleanedLines:
-    #         #if exists, set canAdd to false
-    #         if abs(cleanedLine.get_x_intercept()[0] - line.get_x_intercept()[0]) < 0.5:# or cleanedLine.length() < line.length():
-    #             canAdd = False
-
-    #     if canAdd:
-    #         cleanedLines.append(line)
     return cleanedLines
 
 def detect_lanes(lines):
-    '''Takes a list of lines as an input and returns a list of lanes
-    # xinterceptsUnsorted = [point[0] for point in lines]
-    # xintercepts = xinterceptsUnsorted.sort()
-
-    # solely get intercept points
-    (_, intercept_points) = get_slope_intercepts(lines)
-    # disregard y-coordinate of x-intercept
-    x_intercepts = [point[0] for point in intercept_points]
-    # key: value -> x-intercept, line
-    unsorted_intercept_and_line = dict(zip(x_intercepts,lines))
-
-    # sort dictionary by key
-    intercept_and_line = dict(sorted(unsorted_intercept_and_line.items()))
-
-    for index,key in enumerate(intercept_and_line.keys()):'''
-    
     lanes = []
     cleanedLines = filterLines(lines)
     cleanedLines.sort(key=lambda x: x.get_x_intercept()[0])
