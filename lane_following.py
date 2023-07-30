@@ -29,11 +29,16 @@ def draw_center_lane(img, center_intercept, center_slope, xPoint, yPoint):
     cv2.line(img, (int(center_intercept), imgPixelHeight), (int(xPoint), int(yPoint)), (0,0,255), 6)
     return img
 
-def recommend_direction(x_intercept,slope, width = 650):
+def recommend_direction(x_intercept,slope, line, width = 650):
     '''Takes the center of the closest lane and its slope as inputs and returns a direction'''
+    msg = ""
     mid_right = width/2 + 100
     mid_left = width/2 - 100
     strafe_direction = ""
+
+    if abs(slope) < 0.2:
+        print("turn left or right 45 degrees")
+
     if  x_intercept > mid_right and x_intercept < width:
         strafe_direction = "right"
     elif x_intercept < mid_left and x_intercept > 0:
@@ -42,9 +47,16 @@ def recommend_direction(x_intercept,slope, width = 650):
         strafe_direction = "forward"
     
     if slope < 0:
-        print("turn right")
+        msg = "turn right "
     elif slope > 0:
-        print("turn left")
+        msg = "turn left "
+
+    opposite = max(line.get_points()[1],line.get_points()[3]) - min(line.get_points()[1], line.get_points()[3])
+    hypotenuse = line.length()
+    turn_in_radians = np.arccos(opposite/hypotenuse)
+    turn_in_degrees = turn_in_radians*180/np.pi
+    msg += "by " + str(turn_in_degrees) + " degrees"
+    print(msg)
 
     return strafe_direction
 

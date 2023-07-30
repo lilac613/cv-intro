@@ -66,7 +66,7 @@ def draw_lines(img, lines: list[Line], color: tuple[int,int,int]=(0,255,0)):
     i = 0
     for line in lines:
         (x1, y1, x2, y2) = line.get_points()
-        cv2.line(temp_img, (x1,y1), (x2,y2), color, 2)
+        cv2.line(temp_img, (int(x1),int(y1)), (int(x2),int(y2)), color, 2)
     return temp_img
 
 def get_slope_intercepts(lines: list[Line]) -> tuple[list[float], list[int]]:
@@ -140,5 +140,5 @@ def draw_lanes(img,lanes):
     for lane in lanes:
         for line in lane:
             (x1, y1, x2, y2) = line.get_points()
-            cv2.line(temp_img, (x1,y1), (x2,y2), (0,255,0), 2)
+            cv2.line(temp_img, (int(x1),int(y1)), (int(x2),int(y2)), (0,255,0), 2)
     return temp_img
