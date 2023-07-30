@@ -3,6 +3,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 #from dt_apriltags import Detector
 
+
 class Line:
     def __init__(self,x1, y1, x2, y2):
         self.x1 = x1
@@ -30,6 +31,19 @@ class Line:
         return self.d
 
 def detect_lines(my_img, edges, threshold1, threshold2, apertureSize,minLineLength,maxLineGap):
+    '''Takes an image and detects lines on it.
+    Args:
+        img (result of cv2.imread()): the image to process.
+        edges (result of cv2.Canny()): edges on the image.
+        threshold1 (int): the first threshold for the Canny edge detector.
+        threshold2 (int): the second thlane_detection.pyreshold for the Canny edge detector.
+        apertureSize (int): the aperture size for the Sobel operator.
+        minLineLength (int): the minimum length of a line.
+        maxLineGap (int): the maximum gap between two points to be considered the same line.
+    
+    Returns:
+    the list of lines (list)
+    '''
     lines = cv2.HoughLinesP(
                  edges,
                  rho=1,
@@ -46,7 +60,7 @@ def detect_lines(my_img, edges, threshold1, threshold2, apertureSize,minLineLeng
 
     return ret_lines
 
-def draw_lines(img, lines, color=(0,255,0)):
+def draw_lines(img, lines: list[Line], color: tuple[int,int,int]=(0,255,0)):
     '''Takes an image and a list of lines as inputs and returns an image with the lines drawn on it'''
     temp_img =img
     i = 0
@@ -55,7 +69,7 @@ def draw_lines(img, lines, color=(0,255,0)):
         cv2.line(temp_img, (x1,y1), (x2,y2), color, 2)
     return temp_img
 
-def get_slope_intercepts(lines):
+def get_slope_intercepts(lines: list[Line]) -> tuple[list[float], list[int]]:
     '''Takes in list of lines as input and returns a list of slopes and a list of intercepts'''
     slopes = []
     intercepts = []
@@ -64,8 +78,8 @@ def get_slope_intercepts(lines):
         intercepts.append(line.get_x_intercept())
     return (slopes,intercepts)
 
-def filterLines(lines):
-    '''removes collinear lines'''
+def merge_collinear_lines(lines: list[Line]) -> list[Line]:
+    '''Merge collinear lines'''
     cleanedLines = []
     for i in range(len(lines)):
         if lines[i].dealtWith():
@@ -103,9 +117,10 @@ def filterLines(lines):
             cleanedLines.append(Line(minx1,maxy1,maxx2,miny2))
     return cleanedLines
 
-def detect_lanes(lines):
+def detect_lanes(lines: list[Line]):
+    '''Detect pairs of lines that comprise a lane'''
     lanes = []
-    cleanedLines = filterLines(lines)
+    cleanedLines = merge_collinear_lines(lines)
     cleanedLines.sort(key=lambda x: x.get_x_intercept()[0])
     pairBefore = False
     startPoint = 1
