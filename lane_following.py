@@ -1,9 +1,9 @@
 import cv2
 import numpy as np
 import matplotlib.pyplot as plt
-import lane_detection
+import Line
 
-def get_lane_center(lanes: list[(lane_detection.Line,lane_detection.Line)]):
+def get_lane_center(lanes: list[(Line.Line,Line.Line)]):
     '''Finds lane closest to robot
     Args:
         lanes (list[(Line,Line)]): list of lanes
@@ -23,7 +23,7 @@ def get_lane_center(lanes: list[(lane_detection.Line,lane_detection.Line)]):
     return [closest_lane]
     #return (closest_intercept,closest_slope)
 
-def get_center_line(lane: list[(lane_detection.Line,lane_detection.Line)], screen_height: int=180) -> lane_detection.Line:
+def get_center_line(lane: list[(Line.Line,Line.Line)], screen_height: int=180) -> Line.Line:
     '''Finds the center line based on the center lane
     Args:
         lane (list[(Line,Line)]): list of lanes
@@ -31,9 +31,9 @@ def get_center_line(lane: list[(lane_detection.Line,lane_detection.Line)], scree
     center_slope = 1/((1/lane[0].get_slope() + 1/lane[1].get_slope())/2)
     center_intercept = (lane[0].get_x_intercept()[0] + lane[1].get_x_intercept()[0])/2
     x1 = ((-1*screen_height) + center_slope * center_intercept)/center_slope
-    return lane_detection.Line(x1,0,center_intercept,screen_height)
+    return Line.Line(x1,0,center_intercept,screen_height)
 
-def recommend_direction(x_intercept: int,slope: float, line: lane_detection.Line, width:int = 650):
+def recommend_direction(x_intercept: int,slope: float, line: Line.Line, width:int = 650):
     '''Determines the heading for the robot compared to the center line
     Args:
         x_intercept (int): x=intercept of center line
