@@ -3,34 +3,43 @@ import numpy as np
 import matplotlib.pyplot as plt
 import lane_detection
 
-def get_lane_center(lanes: list[lane_detection.Line]):
-    '''Finds lane closest to robot'''
+def get_lane_center(lanes: list[(lane_detection.Line,lane_detection.Line)]):
+    '''Finds lane closest to robot
+    Args:
+        lanes (list[(Line,Line)]): list of lanes
+    
+    Returns:
+    the lane closest to the center frame of the robot'''
+
     steepest_slope = 0
     closest_lane = lanes[0]
+
     for lane in lanes:
         current_slope = max(abs(lane[0].get_slope()),abs(lane[1].get_slope()))
-        #center_intercept = (lane[0].get_x_intercept()[0] + lane[1].get_x_intercept()[0])/2
+        # compare steeper slopes
         if current_slope > steepest_slope:
             closest_lane = lane
             steepest_slope = current_slope
     return [closest_lane]
     #return (closest_intercept,closest_slope)
 
-def get_center_line(lane, screen_height=180):
-    '''Finds the center line based on the center lane'''
+def get_center_line(lane: list[(lane_detection.Line,lane_detection.Line)], screen_height: int=180) -> lane_detection.Line:
+    '''Finds the center line based on the center lane
+    Args:
+        lane (list[(Line,Line)]): list of lanes
+        screen_height (int,optional): height of screen'''
     center_slope = 1/((1/lane[0].get_slope() + 1/lane[1].get_slope())/2)
     center_intercept = (lane[0].get_x_intercept()[0] + lane[1].get_x_intercept()[0])/2
     x1 = ((-1*screen_height) + center_slope * center_intercept)/center_slope
     return lane_detection.Line(x1,0,center_intercept,screen_height)
 
-def draw_center_lane(img, center_intercept, center_slope, xPoint, yPoint):
-    global imgPixelHeight
-    imgPixelHeight = img.shape[0]
-    cv2.line(img, (int(center_intercept), imgPixelHeight), (int(xPoint), int(yPoint)), (0,0,255), 6)
-    return img
-
-def recommend_direction(x_intercept,slope, line, width = 650):
-    '''Takes the center of the closest lane and its slope as inputs and returns a direction'''
+def recommend_direction(x_intercept: int,slope: float, line: lane_detection.Line, width:int = 650):
+    '''Determines the heading for the robot compared to the center line
+    Args:
+        x_intercept (int): x=intercept of center line
+        slope (int): slope of center line
+        line (Line): center line
+        width (int, optional): width of screen'''
     msg = ""
     mid_right = width/2 + 50
     mid_left = width/2 - 50
@@ -60,6 +69,7 @@ def recommend_direction(x_intercept,slope, line, width = 650):
         msg = "turn left "
         direction = "clockwise"
 
+    # get angle at which to turn
     opposite = max(line.get_points()[1],line.get_points()[3]) - min(line.get_points()[1], line.get_points()[3])
     hypotenuse = line.length()
     turn_in_radians = np.arccos(opposite/hypotenuse)

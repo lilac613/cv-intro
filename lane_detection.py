@@ -31,7 +31,7 @@ class Line:
     def dealtWith(self):
         return self.d
 
-def detect_lines(my_img, edges, threshold1, threshold2, apertureSize,minLineLength,maxLineGap):
+def detect_lines(my_img, edges, threshold1, threshold2, apertureSize,minLineLength,maxLineGap) -> list[Line]:
     '''Takes an image and detects lines on it.
     Args:
         img (result of cv2.imread()): the image to process.
@@ -137,13 +137,17 @@ def merge_collinear_lines(lines: list[Line], intercept_margin=20, slope_margin=1
     return cleanedLines
 
 
-def detect_lanes(lines: list[Line], intercept_margin=40, slope_margin = 1):
+def detect_lanes(lines: list[Line]) -> list[(Line,Line)]:
     '''Detect pairs of lines that comprise a lane
     Args:
-        lines (list[Line]): list of lines that may form a lane'''
+        lines (list[Line]): list of lines that may form a lane
+    
+    Returns:
+    list of lanes'''
     lanes = []
     cleanedLines = merge_collinear_lines(lines)
     cleanedLines.sort(key=lambda x: x.get_x_intercept()[0])
+    
     pairBefore = False
     startPoint = 1
     endPoint = len(cleanedLines)
