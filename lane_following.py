@@ -32,30 +32,39 @@ def draw_center_lane(img, center_intercept, center_slope, xPoint, yPoint):
 def recommend_direction(x_intercept,slope, line, width = 650):
     '''Takes the center of the closest lane and its slope as inputs and returns a direction'''
     msg = ""
-    mid_right = width/2 + 100
-    mid_left = width/2 - 100
+    mid_right = width/2 + 50
+    mid_left = width/2 - 50
     strafe_direction = ""
+    direction = ""
 
+    # if the line is almost horizontal
     if abs(slope) < 0.2:
         print("turn left or right 45 degrees")
 
+    # if line is on right side of screen and relatively vertical
     if  x_intercept > mid_right and x_intercept < width:
-        strafe_direction = "right"
+        strafe_direction = "crab right"
+    # if line is on left side of screen and relatively vertical
     elif x_intercept < mid_left and x_intercept > 0:
-        strafe_direction = "left"
+        strafe_direction = "crab left"
+    # if line is relatively horizontal
     else:
-        strafe_direction = "forward"
-    
+        strafe_direction = "strafe forward"
+    print(strafe_direction)
+
+    # instructions for which direction to turn
     if slope < 0:
-        msg = "turn right "
+        msg = "rotate right "
+        direction =  "counter-clockwise"
     elif slope > 0:
         msg = "turn left "
+        direction = "clockwise"
 
     opposite = max(line.get_points()[1],line.get_points()[3]) - min(line.get_points()[1], line.get_points()[3])
     hypotenuse = line.length()
     turn_in_radians = np.arccos(opposite/hypotenuse)
     turn_in_degrees = turn_in_radians*180/np.pi
-    msg += "by " + str(turn_in_degrees) + " degrees"
+    msg += "by " + str(turn_in_degrees) + " degrees " + direction
     print(msg)
 
     return strafe_direction

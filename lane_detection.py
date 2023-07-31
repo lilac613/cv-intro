@@ -61,7 +61,15 @@ def detect_lines(my_img, edges, threshold1, threshold2, apertureSize,minLineLeng
     return ret_lines
 
 def draw_lines(img, lines: list[Line], color: tuple[int,int,int]=(0,255,0)):
-    '''Takes an image and a list of lines as inputs and returns an image with the lines drawn on it'''
+    '''Takes an image and draws the lines on that image
+    Args:
+        img (result of cv2.imread()): the image to process.
+        lines (list[Line]): list of lines to be drawn on image
+        color (tuple[int,int,int]): the color of the line
+        
+    Returns:
+    the image with lines drawn
+    '''
     temp_img =img
     i = 0
     for line in lines:
@@ -70,7 +78,7 @@ def draw_lines(img, lines: list[Line], color: tuple[int,int,int]=(0,255,0)):
     return temp_img
 
 def get_slope_intercepts(lines: list[Line]) -> tuple[list[float], list[int]]:
-    '''Takes in list of lines as input and returns a list of slopes and a list of intercepts'''
+    '''Determines the slopes and x-intercepts of lines'''
     slopes = []
     intercepts = []
     for line in lines:
