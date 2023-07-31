@@ -1,4 +1,5 @@
 class Line:
+    screen_height = 1080
     def __init__(self,x1, y1, x2, y2):
         self.x1 = x1
         self.x2 = x2
@@ -10,11 +11,11 @@ class Line:
         if self.x1==self.x2:
             return None
         return (self.y2-self.y1)/(self.x2-self.x1)
-    def get_x_intercept(self,screen_height=180):
+    def get_x_intercept(self):
         '''returns x-ntercept of line'''
         if self.y1==self.y2:
             return None
-        return ((((screen_height - self.y1)/self.get_slope())+ self.x1),0)
+        return ((((self.screen_height - self.y1)/self.get_slope())+ self.x1),0)
     def get_points(self):
         return (self.x1, self.y1, self.x2, self.y2)
     def length(self):

@@ -23,7 +23,7 @@ def get_lane_center(lanes: list[(Line.Line,Line.Line)]):
     return [closest_lane]
     #return (closest_intercept,closest_slope)
 
-def get_center_line(lane: list[(Line.Line,Line.Line)], screen_height: int=180) -> Line.Line:
+def get_center_line(lane: list[(Line.Line,Line.Line)], screen_height: int=1080) -> Line.Line:
     '''Finds the center line based on the center lane
     Args:
         lane (list[(Line,Line)]): list of lanes
@@ -59,14 +59,14 @@ def recommend_direction(x_intercept: int,slope: float, line: Line.Line, width:in
     # if line is relatively horizontal
     else:
         strafe_direction = "strafe forward"
-    print(strafe_direction)
+    #print(strafe_direction)
 
     # instructions for which direction to turn
     if slope < 0:
-        msg = "rotate right "
+        turn_direction = "rotate right"
         direction =  "counter-clockwise"
     elif slope > 0:
-        msg = "turn left "
+        turn_direction = "rotate left"
         direction = "clockwise"
 
     # get angle at which to turn
@@ -74,8 +74,8 @@ def recommend_direction(x_intercept: int,slope: float, line: Line.Line, width:in
     hypotenuse = line.length()
     turn_in_radians = np.arccos(opposite/hypotenuse)
     turn_in_degrees = turn_in_radians*180/np.pi
-    msg += "by " + str(turn_in_degrees) + " degrees " + direction
-    print(msg)
+    #msg += "by " + str(turn_in_degrees) + " degrees " + direction
+    #print(msg)
 
-    return strafe_direction
+    return (strafe_direction,turn_direction,turn_in_degrees,direction)
 

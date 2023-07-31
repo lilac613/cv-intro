@@ -29,11 +29,10 @@ def detect_lines(my_img, edges, threshold1, threshold2, apertureSize,minLineLeng
          )
     ret_lines = []
     for line in lines:
-
         x1, y1, x2, y2 = line[0]
         ret_lines.append(Line.Line(x1,y1,x2,y2))
-
-    return ret_lines
+    ret = merge_collinear_lines(ret_lines)
+    return ret
 
 def draw_lines(img, lines: list[Line.Line], color: tuple[int,int,int]=(0,255,0)):
     '''Takes an image and draws the lines on that image
@@ -129,14 +128,19 @@ def detect_lanes(lines: list[Line.Line]) -> list[(Line.Line,Line.Line)]:
     # NEED TO HAVE CASES FOR WHEN THE LENGTH OF CLEANED LINES IS LESS THAN 1
 
     # if the lines can consecutively make a lane starting from the first lane
-    if (cleanedLines[1].get_x_intercept()[0] - cleanedLines[0].get_x_intercept()[0]) < (cleanedLines[2].get_x_intercept()[0]  - cleanedLines[1].get_x_intercept()[0]):
-        startPoint = 0
-        pairBefore = True
-    # if the last line is not part of a lane or the first part is not part of a lane
-    if (pairBefore and len(cleanedLines)%2 != 0) or (not pairBefore and len(cleanedLines)%2==0):
-        endPoint = len(cleanedLines)-1
-    for i in range(startPoint,endPoint,2):
-        lanes.append((cleanedLines[i],cleanedLines[i+1]))
+    if len(cleanedLines)==1:
+        lanes = []
+    elif len(cleanedLines) == 2:
+        lanes = [[cleanedLines[0],cleanedLines[1]]]
+    else:
+        if (cleanedLines[1].get_x_intercept()[0] - cleanedLines[0].get_x_intercept()[0]) < (cleanedLines[2].get_x_intercept()[0]  - cleanedLines[1].get_x_intercept()[0]):
+            startPoint = 0
+            pairBefore = True
+        # if the last line is not part of a lane or the first part is not part of a lane
+        if (pairBefore and len(cleanedLines)%2 != 0) or (not pairBefore and len(cleanedLines)%2==0):
+            endPoint = len(cleanedLines)-1
+        for i in range(startPoint,endPoint,2):
+            lanes.append((cleanedLines[i],cleanedLines[i+1]))
     return lanes
 
 def draw_lanes(img,lanes,diffLaneColors=False):
