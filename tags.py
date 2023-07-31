@@ -1,4 +1,4 @@
-from dt_apriltags import Detector
+'''from dt_apriltags import Detector
 import matplotlib.pyplot as plt
 import numpy as np
 
@@ -16,4 +16,4 @@ def get_tags(img):
                        debug=0)
 
     tags = at_detector.detect(img, True, camera_params, tag_size)
-    return tags
+    return tags'''
